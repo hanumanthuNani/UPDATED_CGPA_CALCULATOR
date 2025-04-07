@@ -133,19 +133,39 @@ function toggleDarkMode() {
 }
 
 function downloadAsPDF() {
-  import("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js").then(jsPDFModule => {
-    const { jsPDF } = jsPDFModule;
-    const doc = new jsPDF();
-    doc.html(document.body, {
-      callback: function (doc) {
-        doc.save("cgpa_result.pdf");
-      },
-      x: 10,
-      y: 10,
-      width: 180,
-      windowWidth: document.body.scrollWidth
-    });
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.html(document.body, {
+    callback: function (doc) {
+      doc.save("cgpa_result.pdf");
+    },
+    x: 10,
+    y: 10,
+    width: 180,
+    windowWidth: document.body.scrollWidth
   });
+}
+
+function downloadResult() {
+  if (allSemesters.length === 0) {
+    showPopup("Please calculate at least one semester CGPA before downloading.");
+    return;
+  }
+
+  let resultText = "📘 CGPA Result Summary\n\n";
+  allSemesters.forEach((sem, index) => {
+    const semCGPA = sem.totalPoints / sem.totalCredits;
+    resultText += `Semester ${index + 1}: CGPA = ${semCGPA.toFixed(2)}\n`;
+  });
+
+  const overall = calculateOverallCGPA();
+  resultText += `\n🎯 Overall CGPA: ${overall.toFixed(2)}\n\nDesigned by Nani Hanumanthu`;
+
+  const blob = new Blob([resultText], { type: "text/plain" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "CGPA_Result.txt";
+  link.click();
 }
 
 document.getElementById("undo-button").addEventListener("click", () => {
